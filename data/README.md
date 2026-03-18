@@ -1,7 +1,8 @@
-# Data setup
+# Data Setup
 
-Place these files in `data/raw/`:
-- diabetic_data.csv
-- IDS_mapping.csv
+Users must place the following raw data files in `data/raw/`:
 
-This folder is ignored by git, so the raw data will not be uploaded to GitHub.
+- `diabetic_data.csv`
+- `IDS_mapping.csv`
+
+These raw files are kept out of version control and should not be committed to GitHub.
