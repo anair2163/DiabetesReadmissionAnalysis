@@ -1,43 +1,39 @@
-# 30-Day Readmission Risk Analysis
+# 30-Day Hospital Readmission After a Diabetes Encounter
 
-This project analyzes 30-day hospital readmission risk using the UCI Diabetes 130-US Hospitals dataset. The business question is straightforward: which patient, encounter, and utilization patterns are most associated with readmission within 30 days, and how can those insights support discharge planning and care management decisions?
+Which encounters were followed by a recorded readmission within 30 days, and how well could a discharge-time model distinguish higher- and lower-risk encounters?
 
-The main analysis is contained in `notebooks/readmission_analysis.ipynb`. The notebook covers data loading, data dictionary review, cleaning and preprocessing, descriptive readmission analysis, utilization and operational drivers, an interpretable logistic regression model, feature interpretation, and an executive summary.
+[Open the analysis notebook](notebooks/readmission_analysis.ipynb) · [UCI dataset and data dictionary](https://archive.ics.uci.edu/dataset/296/diabetes-130-us-hospitals-for-years-1999-2008)
 
-## Dataset
+## Findings
 
-This project uses the UCI Diabetes 130-US Hospitals dataset and the accompanying ID mapping file:
+| Measure | Result |
+| --- | ---: |
+| Eligible encounters | 99,340 |
+| Observed 30-day readmission rate | 11.4% |
+| Readmission with no prior inpatient visits | 8.6% of 66,242 encounters |
+| Readmission with three prior inpatient visits | 21.0% of 3,271 encounters |
+| Test average precision | 0.224 vs. 0.113 prevalence benchmark |
+| Test ROC-AUC | 0.666 |
+| Precision and recall at the default threshold | 18.8% and 53.1% |
 
-- `diabetic_data.csv`
-- `IDS_mapping.csv`
+Prior inpatient utilization showed a clear descriptive difference. The model improved ranking over a constant-score benchmark, but its default threshold flagged substantially more encounters than ultimately had a recorded readmission. That tradeoff matters for any follow-up workflow with limited capacity.
 
-Place both files in `data/raw/` before running the notebook. Raw data is not committed to GitHub, so these files must be added locally.
+## How the analysis works
 
-## Setup
+- Use the UCI 1999–2008 encounter data. Exclude recorded deaths, discharges to hospice and invalid gender records.
+- Define the target as the source's `<30` readmission category. Compare groups with the encounter counts alongside their rates.
+- Fit class-weighted logistic regression with features available by discharge. Treat coded fields as categorical. Split by patient identifier, so each patient's encounters are entirely in training or test.
+- Report average precision against test prevalence and show the default threshold's precision and recall. Model coefficients describe conditional associations.
 
-1. Install dependencies:
+The cohort is historical, and no temporal, external, calibration or subgroup validation was performed. The recorded outcome does not distinguish avoidable readmissions.
+
+## Reproduce
+
+Download `diabetic_data.csv` and `IDS_mapping.csv` from [UCI](https://archive.ics.uci.edu/dataset/296/diabetes-130-us-hospitals-for-years-1999-2008), place them in `data/raw/`, then run:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+jupyter notebook
 ```
 
-2. Start Jupyter:
-
-```bash
-jupyter lab
-```
-
-3. Open `notebooks/readmission_analysis.ipynb`.
-
-## Key Analyses
-
-- Descriptive 30-day readmission rates across demographic and encounter segments
-- Operational driver analysis for prior utilization, medication burden, and diabetes treatment signals
-- Logistic regression modeling with interpretable coefficients for readmission risk
-- Executive summary and recommendations for hospital operations and care management teams
-
-## Limitations
-
-- The analysis is observational and identifies associations, not causal effects.
-- Important drivers such as social needs, outpatient follow-up, and local workflow factors are not available in the source dataset.
-- The model is intentionally simple and interpretable, so it is useful for explanation but not optimized as a production prediction system.
+Open `notebooks/readmission_analysis.ipynb` and run all cells.
